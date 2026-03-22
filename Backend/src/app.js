@@ -9,6 +9,8 @@ app.use(cors({
   credentials: true
 }));
 const authRoutes = require("./routes/user.route");
+const interviewRoutes = require("./routes/interview.route");
 app.use("/api/auth", authRoutes);
+app.use("/api/interview", interviewRoutes);
 
 module.exports = app;
