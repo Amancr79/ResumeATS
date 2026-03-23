@@ -35,7 +35,7 @@ const skillGapSchema = new mongoose.Schema({
       },
       severity:{
         type:String,
-        enum:["Low", "Medium", "High"],
+        enum:["low", "medium", "high"],
         required:[true,"Severity is required"]
       },
       _id:false
@@ -81,6 +81,10 @@ const interviewReportSchema = new mongoose.Schema({
     user:{
         type: mongoose.Schema.Types.ObjectId,
         ref: "users",
+    },
+    title:{
+        type: String , 
+        required: [true, "job title required"]
     }
 }, { timestamps: true });
 

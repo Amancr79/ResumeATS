@@ -1,0 +1,101 @@
+/* Accordion Item */
+.accordion-item {
+  background: linear-gradient(135deg, #eff2f7, #cdced1);
+  border-radius: 12px;
+  margin-bottom: 14px;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transition: all 0.3s ease;
+}
+
+/* Header */
+.accordion-header {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  cursor: pointer;
+}
+
+.question-left{
+ display: flex;
+ flex-direction: row;
+ gap:8px;
+}
+/* Question */
+.accordion-header p {
+  margin: 0;
+  color: #1d1e1f;
+  font-weight: 500;
+}
+
+/* Badge */
+.badge {
+  background: rgba(240, 77, 85, 0.295);
+  color: #8b2032;
+  font-size: 12px;
+  padding: 4px 8px;
+  border-radius: 6px;
+}
+
+/* Icon */
+.icon {
+  color: #8b2032;
+  font-size: 18px;
+}
+
+/* ================= BODY FIX ================= */
+
+/* Main body container */
+.accordion-body {
+  padding: 16px;
+  margin: 10px;
+  border-radius: 10px;
+
+  /* 🔥 Glass effect */
+  background: rgba(255, 255, 255, 0.233);
+  backdrop-filter: blur(12px);
+
+  border: 1px solid rgba(255, 255, 255, 0.08);
+
+  color: #1d1e1f;
+  line-height: 1.6;
+}
+
+/* Section titles */
+.intenion,
+.answer {
+  font-size: 13px;
+  margin-bottom: 6px;
+  padding: 6px 10px;
+  border-radius: 6px;
+  width: fit-content;
+  font-weight: 600;
+  width:90px;
+}
+
+/* Intention tag */
+.intenion {
+  background: rgba(248, 142, 56, 0.452);
+  color: #693a04;
+}
+
+/* Answer tag */
+.answer {
+  background: rgba(85, 247, 126, 0.521);
+  color: #18630e;
+  margin-top: 12px;
+}
+
+/* Paragraph spacing */
+.accordion-body p {
+  margin: 6px 0 10px;
+  color: #1d1e1f;
+  font-size: 14px;
+}
+
+/* Active state */
+.accordion-item.active {
+  box-shadow: 0 8px 25px rgba(10, 95, 214, 0.3);
+}

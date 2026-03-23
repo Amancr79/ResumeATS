@@ -2,7 +2,7 @@ import React, { useState } from 'react'
 import { useNavigate, Link } from "react-router-dom";
 import { useAuth } from '../hook/auth.hook';
 
-import '../auth.form.scss'
+import './auth.form.scss'
 
 export default function Register() {
   const navigate = useNavigate();
@@ -21,7 +21,7 @@ export default function Register() {
   const handleSubmit = async(e) => {
     e.preventDefault();
     await handleRegister(username, email, password);
-    navigate('/login');
+    navigate('/homepage');
   }
  
   if(loading){
