@@ -52,3 +52,15 @@ export async function getAllInterviewReports() {
     console.log(err);
   }
 }
+
+export async function generateResumePdf(interviewId) { 
+    try{
+        const response =  await api.post(`/resume/pdf/${interviewId}`, null,{
+          responseType : "blob"
+        } );
+      return response.data;
+   }
+   catch(err){
+       console.log(err);
+   }
+}

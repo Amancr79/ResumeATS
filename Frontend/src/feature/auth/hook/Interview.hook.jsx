@@ -5,6 +5,7 @@ import {
   getInterviewReport,
   getInterviewReportById,
   getAllInterviewReports,
+  generateResumePdf,
 } from "../service/interview.api";
 
 export const useInterview = () => {
@@ -77,8 +78,26 @@ export const useInterview = () => {
     }
   };
 
+  const generatePDF = async(id)=>{
+    try{
+      setLoading(true);
+      const response = await generateResumePdf(id);
+      const url = window.URL.createObjectURL(new Blob([response], {type : "application/pdf"}))
+      const link = document.createElement("a");
+      link.href =  url;
+      link.setAttribute("download",`resume_${id}.pdf`);
+      document.body.appendChild(link);
+      link.click()
+    }
+    catch(err){
+      console.log(err);
+    }finally{
+      setLoading(true);
+    }
+
+  }
+
   useEffect(() => {
-    console.log("$$$$$$$$$$$$$$$$$$$" , id);
     if (id) {
       generateReportByID(id);
     } else {
@@ -93,5 +112,6 @@ export const useInterview = () => {
     generateReport,
     generateAllReport,
     generateReportByID,
+    generatePDF
   };
 };

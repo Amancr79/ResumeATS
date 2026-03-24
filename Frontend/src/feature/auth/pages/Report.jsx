@@ -10,7 +10,7 @@ import "./report.scss";
 
 function Report() {
   const [activeTab, setActiveTab] = useState("technical");
-  const { loading, report, generateReportByID } = useInterview();
+  const { loading, report, generateReportByID , generatePDF} = useInterview();
   const { id } = useParams();
   const navigate = useNavigate();
 
@@ -61,9 +61,9 @@ function Report() {
             <li onClick={() => setActiveTab("plan")}>Day Wise Plan</li>
           </ul>
         </div>
-        <div className="user-profile">
-          <i className="fa-solid fa-circle-user fa-2x"></i>
-          <h4 className="username">John Doe</h4>
+        <div className="download-report" onClick ={()=>generatePDF(id)}>
+          <i className="fa-solid fa-download fa-2x"></i>
+          <h4 className="username">Download</h4>
         </div>
       </div>
       <div className="main-content">{renderComponent()}</div>

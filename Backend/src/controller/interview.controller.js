@@ -1,5 +1,8 @@
 const interviewReportModel = require("../schema/interview/interviewReport.model");
-const generateInterviewReport = require("../service/ai.service");
+const {
+  generateInterviewReport,
+  generateResumeSummary,
+} = require("../service/ai.service");
 const pdfParse = require("pdf-parse");
 
 async function generateUserInterviewReport(req, res) {
@@ -31,12 +34,10 @@ async function generateUserInterviewReport(req, res) {
     });
   } catch (err) {
     console.error(err);
-    res
-      .status(500)
-      .json({
-        message: "Error generating interview report",
-        error: err.message,
-      });
+    res.status(500).json({
+      message: "Error generating interview report",
+      error: err.message,
+    });
   }
 }
 
@@ -52,7 +53,10 @@ async function getInterviewReportById(req, res) {
     res.status(404).json({ message: "No such report found !" });
   }
 
-  res.status(201).json({ message: "report fetched successfully", interviewReport: response });
+  res.status(201).json({
+    message: "report fetched successfully",
+    interviewReport: response,
+  });
 }
 
 async function getAllInterviewReportForUser(req, res) {
@@ -62,15 +66,48 @@ async function getAllInterviewReportForUser(req, res) {
     .select(
       "-resume -selfDescription -jobDescription -__v -preparationPlan -skillGaps -technicalQuestions -behavioralQuestions",
     );
-  res
-    .status(201)
-    .json({
-      message: "Interview report fetched successfully",
-      interviewReport: interviewReports,
-    });
+  res.status(201).json({
+    message: "Interview report fetched successfully",
+    interviewReport: interviewReports,
+  });
 }
+
+async function generateResumeSummaryPDF(req, res) {
+  const { interviewId } = req.params;
+  const interviewReport = await interviewReportModel.findById({
+    _id :interviewId});
+  console.log(interviewReport);
+  if (!interviewReport) {
+    return res.status(404).json({ message: "no report found " });
+  }
+
+  const { resume, selfDescription, jobDescription } = interviewReport;
+
+  // console.log("resume$$$$$$$$$$$" , resume);
+  // console.log("self**************************" , selfDescription);
+  // console.log("job*******************" , jobDescription);
+
+  try {
+    const response = await generateResumeSummary({
+      resume,
+      selfDescription,
+      jobDescription,
+  });
+    res.set({
+      "Content-Type": "application/pdf",
+      "Content-Disposition": `attachment; filename=resume_${interviewId}.pdf`,
+    });
+
+    res.send(response);
+  } catch (err) {
+    console.error("Controller Error:", err);
+    res.status(500).json({ error: "Failed to generate the strategic resume summary." });
+  }
+}
+
 module.exports = {
   generateUserInterviewReport,
   getInterviewReportById,
   getAllInterviewReportForUser,
+  generateResumeSummaryPDF,
 };
