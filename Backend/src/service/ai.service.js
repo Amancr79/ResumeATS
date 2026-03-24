@@ -1,6 +1,7 @@
 const { GoogleGenAI } = require("@google/genai");
 const { z } = require("zod");
 const { zodToJsonSchema } = require("zod-to-json-schema");
+const puppeteer = require("puppeteer");
 
 const ai = new GoogleGenAI({
   apiKey: process.env.GOOGLE_GENAI_API_KEY,
@@ -71,9 +72,18 @@ const interviewReportSchema = z.object({
         "Day wise preparation plan for the candidate to address the identified skill gaps and improve performance in future interviews",
       ),
   ),
+  title: z
+    .string()
+    .describe(
+      "The title of the job for which the interview report is generated",
+    ),
 });
 
-async function generateInterviewReport({ selfDescription, jobDescription, resume }) {
+async function generateInterviewReport({
+  selfDescription,
+  jobDescription,
+  resume,
+}) {
   try {
     const prompt = `
 You are an AI interview assistant.
@@ -134,14 +144,16 @@ IMPORTANT:
       "focusArea": string,
       "tasks": string[]
     }
-  ]
+  ],
+  "title": string
 }
 
 STRICT RULES:
 - technicalQuestions MUST be an array of objects (NOT numbers, NOT strings)
 - behavioralQuestions MUST be an array of objects
-- skillGaps MUST be an array of objects
+- skillGaps MUST be an array of objects & severity must be either low , high or medium no other than this
 - preparationPlan MUST be an array of objects
+- title must be of tech role i.e Devops , Software Engineeer etc
 
 Each object must follow the exact structure.
 
@@ -153,13 +165,13 @@ Do NOT return:
 Now generate the response.
 `;
     const res = await ai.models.generateContent({
-      model: "gemini-2.5-flash",
+      model: "gemini-3-flash-preview",
       contents: prompt,
       config: {
         responseMimeType: "application/json",
       },
     });
-        // 🔥 STEP 1: Parse main JSON
+    // 🔥 STEP 1: Parse main JSON
     const parsed = JSON.parse(res.text);
     /********* */
 
@@ -175,10 +187,16 @@ Now generate the response.
       }
     };
 
-    parsed.technicalQuestions = parsed.technicalQuestions.map(safeParse).filter(Boolean);
-    parsed.behavioralQuestions = parsed.behavioralQuestions.map(safeParse).filter(Boolean);
+    parsed.technicalQuestions = parsed.technicalQuestions
+      .map(safeParse)
+      .filter(Boolean);
+    parsed.behavioralQuestions = parsed.behavioralQuestions
+      .map(safeParse)
+      .filter(Boolean);
     parsed.skillGaps = parsed.skillGaps.map(safeParse).filter(Boolean);
-    parsed.preparationPlan = parsed.preparationPlan.map(safeParse).filter(Boolean);
+    parsed.preparationPlan = parsed.preparationPlan
+      .map(safeParse)
+      .filter(Boolean);
 
     // 🔥 STEP 3: Validate with Zod (VERY IMPORTANT)
     const validated = interviewReportSchema.parse(parsed);
@@ -191,4 +209,56 @@ Now generate the response.
   }
 }
 
-module.exports = generateInterviewReport;
+async function generatePdfFromHtml(htmlContent) {
+  const browser = await puppeteer.launch({ args: ["--no-sandbox"] });
+  try {
+    const page = await browser.newPage();
+    await page.setContent(htmlContent, { waitUntil: "networkidle0" });
+    const pdfBuffer = await page.pdf({ format: "A4", printBackground: true });
+    return pdfBuffer;
+  } finally {
+    await browser.close();
+  }
+}
+
+async function generateResumeSummary({
+  resume,
+  selfDescription,
+  jobDescription,
+}) {
+  const resumePdfSchema = z.object({
+    html: z
+      .string()
+      .describe(
+        "The HTML content of resume which can be converted to PDF using any library like puppeteer",
+      ),
+  });
+
+  const prompt = `Generate resume for a candidate with the following details:
+                  Resume : ${resume}
+                  Self Description : ${selfDescription}
+                  Job Description : ${jobDescription}
+                  the response should be JSON object with single field "html" which contains the HTML content of the resume which is later converted into pdf using librray like puppeteer      
+   `;
+  try {
+    const result = await ai.models.generateContent({
+      model: "gemini-3-flash-preview",
+      contents: prompt,
+      config: {
+        responseMimeType: "application/json",
+        responseSchema: zodToJsonSchema(resumePdfSchema),
+      },
+    });
+    console.log(result.text);
+    const response = result.text;
+    const jsonContent = JSON.parse(response);
+    const pdfBuffer = await generatePdfFromHtml(jsonContent.html);
+    console.log("pdf buffer " , pdfBuffer);
+    return pdfBuffer;
+  } catch (err) {
+    console.log(err);
+    throw err;
+  }
+}
+
+module.exports = { generateInterviewReport, generateResumeSummary };

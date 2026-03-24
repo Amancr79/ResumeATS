@@ -1,8 +1,7 @@
 import React, { useState } from 'react'
-import {Link} from "react-router"
+import {Link , useNavigate} from "react-router"
 import { useAuth } from '../hook/auth.hook';
-
-import '../auth.form.scss'
+import './auth.form.scss'
 
 export default function Login() {
 
@@ -11,6 +10,7 @@ export default function Login() {
   const [password, setPassword] = useState('');
 
   const {loading , handleLogin} = useAuth();
+  const navigate = useNavigate();
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword)
@@ -19,6 +19,7 @@ export default function Login() {
   const handleSubmit=async(e)=>{
     e.preventDefault();
     await handleLogin(email, password);
+    navigate('/homepage');
   }
 
   if(loading){
